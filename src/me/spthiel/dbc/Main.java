@@ -11,6 +11,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import me.spthiel.dbc.listener.CraftListener;
 
+import java.util.Arrays;
+
 public class Main extends JavaPlugin {
 	
 	private Logger logger = Logger.getLogger("[DBC]");

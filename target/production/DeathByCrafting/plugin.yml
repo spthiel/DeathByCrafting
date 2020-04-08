@@ -1,0 +1,5 @@
+name: DeathByCrafting
+version: 1.0.0
+authors: [Elspeth, Myzelmann]
+main: me.spthiel.dbc.Main
+description: Crafting becomes living

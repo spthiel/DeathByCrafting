@@ -2,6 +2,7 @@ package me.spthiel.dbc.listener;
 
 import java.util.SplittableRandom;
 
+import me.spthiel.dbc.entities.EntityHelper;
 import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.Location;
@@ -61,44 +62,47 @@ public class CraftListener implements Listener {
 							(double) (bLoc.getBlockY() + 1),
 							(double) bLoc.getBlockZ() + this.rand.nextDouble()
 					);
-					Zombie   zombie = (Zombie) bLoc.getWorld().spawnEntity(l, EntityType.ZOMBIE);
-					zombie.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 19999980, 1, false, false));
-					zombie.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 19999980, 1, false, false));
-					zombie.setBaby(true);
-					zombie.setSilent(true);
-					zombie.setCanPickupItems(false);
-					zombie.setHealth(10.0D);
-					zombie.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(10.0D);
-					ItemStack newItemStack = e.getInventory().getResult().clone();
-					newItemStack.setAmount(1);
-					zombie.getEquipment().setHelmet(newItemStack);
-					zombie.getEquipment().setChestplate(newItemStack);
-					zombie.getEquipment().setLeggings(newItemStack);
-					zombie.getEquipment().setBoots(newItemStack);
-					zombie.getEquipment().setItemInMainHand(newItemStack);
-					zombie.getEquipment().setItemInOffHand(newItemStack);
-					String name;
-					if (e.getInventory().getResult().getItemMeta().hasDisplayName()) {
-						name = e.getInventory().getResult().getItemMeta().getDisplayName();
-					} else {
-						name = e.getInventory().getResult().getType().name().replace("_", " ").toLowerCase();
-					}
 					
-					name = "" + ChatColor.GOLD + ChatColor.BOLD + name;
-					ArmorStand nametag = (ArmorStand) bLoc.getWorld().spawnEntity(l, EntityType.ARMOR_STAND);
-					nametag.setVisible(false);
-					nametag.setAI(false);
-					nametag.setInvulnerable(true);
-					nametag.setArms(false);
-					nametag.setBasePlate(false);
-					nametag.setCollidable(false);
-					nametag.setGravity(false);
-					nametag.setMarker(true);
-					nametag.setCustomName(name);
-					nametag.setCustomNameVisible(true);
-					zombie.addPassenger(nametag);
-					zombie.setCustomName(name);
-					zombie.addScoreboardTag("LIVING_ITEM");
+					
+					EntityHelper.spawnItemMonster(l, e.getInventory().getResult(), 6);
+//					Zombie   zombie = (Zombie) bLoc.getWorld().spawnEntity(l, EntityType.ZOMBIE);
+//					zombie.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 19999980, 1, false, false));
+//					zombie.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 19999980, 1, false, false));
+//					zombie.setBaby(true);
+//					zombie.setSilent(true);
+//					zombie.setCanPickupItems(false);
+//					zombie.setHealth(10.0D);
+//					zombie.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(10.0D);
+//					ItemStack newItemStack = e.getInventory().getResult().clone();
+//					newItemStack.setAmount(1);
+//					zombie.getEquipment().setHelmet(newItemStack);
+//					zombie.getEquipment().setChestplate(newItemStack);
+//					zombie.getEquipment().setLeggings(newItemStack);
+//					zombie.getEquipment().setBoots(newItemStack);
+//					zombie.getEquipment().setItemInMainHand(newItemStack);
+//					zombie.getEquipment().setItemInOffHand(newItemStack);
+//					String name;
+//					if (e.getInventory().getResult().getItemMeta().hasDisplayName()) {
+//						name = e.getInventory().getResult().getItemMeta().getDisplayName();
+//					} else {
+//						name = e.getInventory().getResult().getType().name().replace("_", " ").toLowerCase();
+//					}
+//
+//					name = "" + ChatColor.GOLD + ChatColor.BOLD + name;
+//					ArmorStand nametag = (ArmorStand) bLoc.getWorld().spawnEntity(l, EntityType.ARMOR_STAND);
+//					nametag.setVisible(false);
+//					nametag.setAI(false);
+//					nametag.setInvulnerable(true);
+//					nametag.setArms(false);
+//					nametag.setBasePlate(false);
+//					nametag.setCollidable(false);
+//					nametag.setGravity(false);
+//					nametag.setMarker(true);
+//					nametag.setCustomName(name);
+//					nametag.setCustomNameVisible(true);
+//					zombie.addPassenger(nametag);
+//					zombie.setCustomName(name);
+//					zombie.addScoreboardTag("LIVING_ITEM");
 				}
 				
 				for (i = 0; i < materials.length ; ++i) {
@@ -118,7 +122,7 @@ public class CraftListener implements Listener {
 	@EventHandler
 	public void onDeath(EntityDeathEvent e) {
 		
-		if (e.getEntityType().equals(EntityType.ZOMBIE) && e.getEntity().getScoreboardTags().contains("LIVING_ITEM")) {
+		if (e.getEntityType().equals(EntityType.SKELETON) && e.getEntity().getScoreboardTags().contains("LIVING_ITEM")) {
 			e.getEntity().getPassengers().forEach((p) -> {
 				p.remove();
 			});

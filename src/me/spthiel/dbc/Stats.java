@@ -7,27 +7,29 @@ import org.bukkit.configuration.ConfigurationSection;
 
 public class Stats {
 	
-	private float health;
-	private float damage;
+	private int health;
+	private int damage;
 	
 	public Stats(ConfigurationSection section) {
-		Field[] fields = this.getClass().getDeclaredFields();
-		for (Field field : fields) {
-			Object o = section.get(field.getName());
-			try {
-				field.set(o, this);
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		}
+//
+//		Field[] fields = this.getClass().getDeclaredFields();
+//
+//		for (Field field : fields) {
+//			Object o = section.get(field.getName());
+//			try {
+//				field.set(o, this);
+//			} catch (IllegalAccessException e) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 	
-	public float getHealth() {
+	public int getHealth() {
 		
 		return health;
 	}
 	
-	public float getDamage() {
+	public int getDamage() {
 		
 		return damage;
 	}
