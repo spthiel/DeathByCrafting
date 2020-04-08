@@ -1,0 +1,7 @@
+materials:
+  wood:
+    health: 20
+    attack: 3
+  default:
+    health: 10
+    attack: 1.5
