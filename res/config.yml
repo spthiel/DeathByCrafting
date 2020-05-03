@@ -1,7 +1,16 @@
 materials:
-  wood:
+  easy:
     health: 20
-    attack: 3
+    damage: 3
+    color: '&b'
+    appliesTo:
+      - oak_planks
   default:
     health: 10
-    attack: 1.5
+    damage: 3
+    knockbackResistance: 0
+    speed: 0.23
+    attackSpeed: 1
+    armor: 2
+    armorToughness: 0
+    color: 'WHITE'

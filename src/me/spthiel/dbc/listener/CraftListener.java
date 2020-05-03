@@ -8,17 +8,18 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Zombie;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import me.spthiel.dbc.Main;
 
 public class CraftListener implements Listener {
 	
@@ -49,7 +50,6 @@ public class CraftListener implements Listener {
 						if (!materials[i].getType().equals(Material.AIR)) {
 							if (materials[i].getAmount() < minimum) {
 							}
-							
 							minimum = materials[i].getAmount();
 						}
 					}
@@ -123,12 +123,38 @@ public class CraftListener implements Listener {
 	public void onDeath(EntityDeathEvent e) {
 		
 		if (e.getEntityType().equals(EntityType.SKELETON) && e.getEntity().getScoreboardTags().contains("LIVING_ITEM")) {
-			e.getEntity().getPassengers().forEach((p) -> {
-				p.remove();
-			});
+			e.getEntity().getPassengers().forEach(Entity :: remove);
 			e.getDrops().clear();
-			e.getDrops().add(e.getEntity().getEquipment().getHelmet());
+			e.getDrops().add(getDrops((Skeleton)e.getEntity()));
 		}
 		
+	}
+	
+	private ItemStack getDrops(Skeleton skeleton) {
+		
+		EntityEquipment equipment = skeleton.getEquipment();
+		if(equipment != null) {
+			if(isItem(equipment.getHelmet())) {
+				return equipment.getHelmet();
+			}
+			if(isItem(equipment.getChestplate())) {
+				return equipment.getChestplate();
+			}
+			if(isItem(equipment.getLeggings())) {
+				return equipment.getLeggings();
+			}
+			if(isItem(equipment.getBoots())) {
+				return equipment.getBoots();
+			}
+			if(isItem(equipment.getItemInMainHand())) {
+				return equipment.getItemInMainHand();
+			}
+		}
+		Main.logger.severe("Something went wrong trying to get the item of a living item " + skeleton.getCustomName());
+		return new ItemStack(Material.AIR);
+	}
+	
+	private boolean isItem(ItemStack stack) {
+		return stack != null && stack.getAmount() != 0 && !stack.getType().isAir();
 	}
 }

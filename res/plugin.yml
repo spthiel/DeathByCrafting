@@ -1,5 +1,27 @@
 name: DeathByCrafting
 version: 1.0.0
+api-version: "1.15"
 authors: [Elspeth, Myzelmann]
 main: me.spthiel.dbc.Main
 description: Crafting becomes living
+
+commands:
+  dbc:
+    description: "Command of the DeathByCrafting plugin"
+    permission: dbc
+    aliases: deathbycrafting
+    usage: "\xA7f\xA7m----------------\xA7f[ \xA7aDeathByCrafting \xA7f]\xA7m---------------\n\xA7e - \xA7a/dbc reload \xA77- reload the config\n\xA7e - \xA7a/dbc init \xA77- opens chest gui to group materials\n\xA7f\xA7m-----------------------------------------------"
+
+permissions:
+  dbc.*:
+    description: "Grants all dbc permissions"
+    default: false
+    children:
+      - dbc.reload
+      - dbc.init
+  dbc.reload:
+    description: "Allows usage of /dbc reload"
+    default: false
+  dbc.init:
+    description: "Allows usage of /dbc init"
+    default: false
