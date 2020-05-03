@@ -2,119 +2,87 @@ package me.spthiel.dbc.listener;
 
 import java.util.SplittableRandom;
 
+import me.spthiel.dbc.config.Config;
 import me.spthiel.dbc.entities.EntityHelper;
-import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
+import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 import me.spthiel.dbc.Main;
 
 public class CraftListener implements Listener {
 	
-	SplittableRandom rand = new SplittableRandom();
-	
-	public CraftListener() {
-	
-	}
+	private SplittableRandom rand = new SplittableRandom();
 	
 	@EventHandler
 	public void onCraft(CraftItemEvent e) {
 		
 		if (!e.getAction().equals(InventoryAction.NOTHING)) {
-			if (e.getAction().equals(InventoryAction.PICKUP_ALL) || e
-					.getAction()
-					.equals(InventoryAction.PICKUP_HALF) || e.getAction().equals(InventoryAction.HOTBAR_SWAP) || e
-					.getAction()
-					.equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
-				boolean     shiftClick = e.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY);
-				Location    bLoc       = e.getInventory().getLocation();
-				ItemStack[] materials  = e.getInventory().getContents();
-				int         minimum    = 1;
-				short       i;
-				if (shiftClick) {
-					minimum = 64;
-					
-					for (i = 0; i < materials.length ; ++i) {
-						if (!materials[i].getType().equals(Material.AIR)) {
-							if (materials[i].getAmount() < minimum) {
-							}
-							minimum = materials[i].getAmount();
+			if (e.getAction().equals(InventoryAction.PICKUP_ALL) ||
+					e.getAction().equals(InventoryAction.PICKUP_HALF) ||
+					e.getAction().equals(InventoryAction.HOTBAR_SWAP) ||
+					e.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
+				
+				e.setCancelled(true);
+				Location bLoc = e.getInventory().getLocation();
+				
+				int itemsChecked      = 0;
+				int possibleCreations = 1;
+				for (ItemStack item : e.getInventory().getMatrix()) {
+					if (item != null && !item.getType().equals(Material.AIR)) {
+						if (itemsChecked == 0) {
+							possibleCreations = item.getAmount();
+						} else {
+							possibleCreations = Math.min(possibleCreations, item.getAmount());
 						}
+						itemsChecked++;
 					}
 				}
-				
-				for (i = 0; i < e.getInventory().getResult().getAmount() * minimum ; ++i) {
-					Location l      = new Location(
+				for (int i = 0 ; i < possibleCreations ; i++) {
+					Location location = new Location(
 							bLoc.getWorld(),
 							(double) bLoc.getBlockX() + this.rand.nextDouble(),
 							(double) (bLoc.getBlockY() + 1),
 							(double) bLoc.getBlockZ() + this.rand.nextDouble()
 					);
 					
-					
-					EntityHelper.spawnItemMonster(l, e.getInventory().getResult(), 6);
-//					Zombie   zombie = (Zombie) bLoc.getWorld().spawnEntity(l, EntityType.ZOMBIE);
-//					zombie.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 19999980, 1, false, false));
-//					zombie.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 19999980, 1, false, false));
-//					zombie.setBaby(true);
-//					zombie.setSilent(true);
-//					zombie.setCanPickupItems(false);
-//					zombie.setHealth(10.0D);
-//					zombie.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(10.0D);
-//					ItemStack newItemStack = e.getInventory().getResult().clone();
-//					newItemStack.setAmount(1);
-//					zombie.getEquipment().setHelmet(newItemStack);
-//					zombie.getEquipment().setChestplate(newItemStack);
-//					zombie.getEquipment().setLeggings(newItemStack);
-//					zombie.getEquipment().setBoots(newItemStack);
-//					zombie.getEquipment().setItemInMainHand(newItemStack);
-//					zombie.getEquipment().setItemInOffHand(newItemStack);
-//					String name;
-//					if (e.getInventory().getResult().getItemMeta().hasDisplayName()) {
-//						name = e.getInventory().getResult().getItemMeta().getDisplayName();
-//					} else {
-//						name = e.getInventory().getResult().getType().name().replace("_", " ").toLowerCase();
-//					}
-//
-//					name = "" + ChatColor.GOLD + ChatColor.BOLD + name;
-//					ArmorStand nametag = (ArmorStand) bLoc.getWorld().spawnEntity(l, EntityType.ARMOR_STAND);
-//					nametag.setVisible(false);
-//					nametag.setAI(false);
-//					nametag.setInvulnerable(true);
-//					nametag.setArms(false);
-//					nametag.setBasePlate(false);
-//					nametag.setCollidable(false);
-//					nametag.setGravity(false);
-//					nametag.setMarker(true);
-//					nametag.setCustomName(name);
-//					nametag.setCustomNameVisible(true);
-//					zombie.addPassenger(nametag);
-//					zombie.setCustomName(name);
-//					zombie.addScoreboardTag("LIVING_ITEM");
+					ItemStack result = e.getRecipe().getResult();
+					EntityHelper.spawnItemMonster(
+							(Player) e.getWhoClicked(),
+							location,
+							result,
+							Config.types.getOrDefault(result.getType(), Config.defaultStats)
+												 );
 				}
+				cleanupCrafting(possibleCreations, e.getInventory());
 				
-				for (i = 0; i < materials.length ; ++i) {
-					if (materials[i].getAmount() > 0) {
-						if (shiftClick) {
-							materials[i].setAmount(0);
-						} else {
-							materials[i].setAmount(materials[i].getAmount() - 1);
-						}
-					}
+			}
+		}
+	}
+	
+	private void cleanupCrafting(int possibleCreations, CraftingInventory inv) {
+		
+		ItemStack[] matrix = inv.getMatrix();
+		inv.setResult(new ItemStack(Material.AIR));
+		for (int i = 0 ; i < matrix.length ; i++) {
+			ItemStack item = matrix[i];
+			if (item != null && !item.getType().equals(Material.AIR)) {
+				int newamount = item.getAmount() - possibleCreations;
+				if (newamount == 0) {
+					matrix[i] = new ItemStack(Material.AIR);
 				}
-				
+				item.setAmount(newamount);
 			}
 		}
 	}
@@ -122,39 +90,60 @@ public class CraftListener implements Listener {
 	@EventHandler
 	public void onDeath(EntityDeathEvent e) {
 		
-		if (e.getEntityType().equals(EntityType.SKELETON) && e.getEntity().getScoreboardTags().contains("LIVING_ITEM")) {
+		if (e.getEntity().getScoreboardTags().contains("LIVING_ITEM")) {
 			e.getEntity().getPassengers().forEach(Entity :: remove);
 			e.getDrops().clear();
-			e.getDrops().add(getDrops((Skeleton)e.getEntity()));
+			e.getDrops().add(getDrops(e.getEntity()));
 		}
 		
 	}
 	
-	private ItemStack getDrops(Skeleton skeleton) {
+	@EventHandler
+	public void onPlayerDeath(PlayerDeathEvent e) {
 		
-		EntityEquipment equipment = skeleton.getEquipment();
-		if(equipment != null) {
-			if(isItem(equipment.getHelmet())) {
+		World    world = e.getEntity().getWorld();
+		Location loc   = e.getEntity().getLocation();
+		world.getEntities()
+			 .stream()
+			 .filter(entity -> entity instanceof LivingEntity)
+			 .map(entity -> (LivingEntity) entity)
+			 .filter(entity -> entity.getScoreboardTags().contains("LIVING_ITEM"))
+			 .filter(entity -> entity.getScoreboardTags().contains(e.getEntity().getUniqueId().toString()))
+			 .forEach(entity -> {
+				 ItemStack drops = getDrops(entity);
+				 world.dropItem(loc, drops);
+				 entity.remove();
+			 });
+	}
+	
+	private ItemStack getDrops(LivingEntity entity) {
+		
+		EntityEquipment equipment = entity.getEquipment();
+		if (equipment != null) {
+			if (isItem(equipment.getHelmet())) {
 				return equipment.getHelmet();
 			}
-			if(isItem(equipment.getChestplate())) {
+			if (isItem(equipment.getChestplate())) {
 				return equipment.getChestplate();
 			}
-			if(isItem(equipment.getLeggings())) {
+			if (isItem(equipment.getLeggings())) {
 				return equipment.getLeggings();
 			}
-			if(isItem(equipment.getBoots())) {
+			if (isItem(equipment.getBoots())) {
 				return equipment.getBoots();
 			}
-			if(isItem(equipment.getItemInMainHand())) {
+			if (isItem(equipment.getItemInMainHand())) {
 				return equipment.getItemInMainHand();
 			}
 		}
-		Main.logger.severe("Something went wrong trying to get the item of a living item " + skeleton.getCustomName());
+		Main.plugin
+				.getLogger()
+				.severe("Something went wrong trying to get the item of a living item " + entity.getCustomName());
 		return new ItemStack(Material.AIR);
 	}
 	
 	private boolean isItem(ItemStack stack) {
+		
 		return stack != null && stack.getAmount() != 0 && !stack.getType().isAir();
 	}
 }

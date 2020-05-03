@@ -1,4 +1,4 @@
-package me.spthiel.dbc.commands;
+package me.spthiel.dbc.gui;
 
 import java.util.LinkedList;
 import java.util.List;

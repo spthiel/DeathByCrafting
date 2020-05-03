@@ -1,25 +1,29 @@
-package me.spthiel.dbc.stats;
+package me.spthiel.dbc.config;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
 import me.spthiel.dbc.Main;
-import me.spthiel.dbc.config.Config;
 
-public class Stats {
+public class Stats implements Iterable<String[]> {
 	
 	public static Stats instance = new Stats(20, 3, 0, 0.23, 1, 2, 0, ChatColor.WHITE);
 	
-	private double health = 0;
-	private double damage = 0;
-	private double knockbackResistance = 0;
-	private double speed = 0;
-	private double attackSpeed = 0;
-	private double armor = 2;
-	private double armorToughness = 0;
-	private ChatColor color;
+	protected double    health              = 0;
+	protected double    damage              = 0;
+	protected double    knockbackResistance = 0;
+	protected double    speed               = 0;
+	protected double    attackSpeed         = 0;
+	protected double    armor               = 2;
+	protected double    armorToughness      = 0;
+	protected ChatColor color;
 	
 	Stats(double health, double damage, double knockbackResistance, double speed, double attackSpeed, double armor, double armorToughness, ChatColor color) {
 		
@@ -34,55 +38,56 @@ public class Stats {
 	}
 	
 	public Stats(ConfigurationSection section) {
-
+		
 		Field[] fields = this.getClass().getDeclaredFields();
-
+		
 		for (Field field : fields) {
 			Object o;
 			String name = field.getName();
-			Class c = field.getType();
+			Class  c    = field.getType();
 			try {
 				if (c.equals(Long.TYPE)) {
 					field.set(this, section.getLong(name));
 				} else if (c.equals(Integer.TYPE)) {
 					field.set(this, section.getInt(name));
 				} else if (c.equals(Short.TYPE)) {
-					field.set(this, (short)section.getInt(name));
+					field.set(this, (short) section.getInt(name));
 				} else if (c.equals(Byte.TYPE)) {
-					field.set(this, (byte)section.getInt(name));
+					field.set(this, (byte) section.getInt(name));
 				} else if (c.equals(String.class)) {
 					field.set(this, section.getString(name));
 				} else if (c.equals(Double.TYPE)) {
 					field.set(this, section.getDouble(name));
 				} else if (c.equals(Float.TYPE)) {
-					field.set(this, (float)section.getDouble(name));
+					field.set(this, (float) section.getDouble(name));
 				} else if (c.equals(Boolean.TYPE)) {
 					field.set(this, section.getBoolean(name));
 				} else if (c.equals(ChatColor.class)) {
 					String color = section.getString(name);
-					if(color == null) {
+					if (color == null) {
 						continue;
 					}
 					ChatColor chatColor = null;
 					try {
 						chatColor = ChatColor.valueOf(color);
-					} catch(IllegalArgumentException e) {
-						if(color.length() <= 2) {
-							chatColor = ChatColor.getByChar(color.charAt(color.length()-1));
+					} catch (IllegalArgumentException e) {
+						if (color.length() <= 2) {
+							chatColor = ChatColor.getByChar(color.charAt(color.length() - 1));
 						}
-						if(chatColor == null) {
+						if (chatColor == null) {
 							chatColor = ChatColor.valueOf(color.toUpperCase());
 						}
 					}
-					System.out.println("Set: " + chatColor.name());
 					field.set(this, chatColor);
-				} else {
+				} else if (!c.equals(this.getClass())) {
 					throw new RuntimeException(c.getName());
 				}
-			} catch (IllegalAccessException e){
+			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			} catch (IllegalArgumentException | ClassCastException e) {
-				Main.plugin.getLogger().severe("Invalid format for " + name + ": " + section.get(name) + " for " + c.getName());
+				Main.plugin
+						.getLogger()
+						.severe("Invalid format for " + name + ": " + section.get(name) + " for " + c.getName());
 			}
 		}
 	}
@@ -138,7 +143,38 @@ public class Stats {
 				", attackSpeed=" + attackSpeed +
 				", armor=" + armor +
 				", armorToughness=" + armorToughness +
-				", color=" + color.name() +
+				", color=" + getColor().name() +
 				'}';
 	}
+	
+	private LinkedList<String[]> toStringList() {
+		LinkedList<String[]> out = new LinkedList<>();
+		out.add(new String[]{"Health", "" + getHealth()});
+		out.add(new String[]{"Damage", "" + getDamage()});
+		out.add(new String[]{"Knockback resistance", "" + getKnockbackResistance()});
+		out.add(new String[]{"Speed", "" + getSpeed()});
+		out.add(new String[]{"Attack speed", "" + getAttackSpeed()});
+		out.add(new String[]{"Armor", "" + getArmor()});
+		out.add(new String[]{"Armor toughness", "" + getArmorToughness()});
+		return out;
+	}
+	
+	@Override
+	@Nonnull
+	public Iterator<String[]> iterator() {
+		
+		return toStringList().iterator();
+	}
+	
+	@Override
+	public void forEach(Consumer<? super String[]> action) {
+		toStringList().forEach(action);
+	}
+	
+	@Override
+	public Spliterator<String[]> spliterator() {
+		
+		return toStringList().spliterator();
+	}
+	
 }
